@@ -13,6 +13,10 @@ public class Player extends Entity{
     GamePanel gp;
     KeyHandler keyH;
 
+    //where the player is drawn on the screen
+    public final int screenX;
+    public final int screenY;
+
     final int originalPlayerWidth=55;
     final int originalPlayerHeight=100;
     final int scale=3;
@@ -21,13 +25,19 @@ public class Player extends Entity{
         this.gp=gp;
         this.keyH=keyH;
 
+        screenX=gp.screenWidth/2-gp.tileSize/2;
+        screenY=gp.screenHeight/2-gp.tileSize/2;
+
+        solidArea=new Rectangle(14, 29, 40, 80);
+
         setDefaultValues();
         getPlayerImage();
     }
 
     public void setDefaultValues(){
-        x=220;
-        y=500;
+        //coordinates for starting position
+        worldX=gp.tileSize*32;
+        worldY=gp.tileSize*200;
         speed=4;
         direction="up";
     }
@@ -48,21 +58,41 @@ public class Player extends Entity{
     }
 
     public void update(){
-        if(keyH.upPressed){
-            direction="up";
-            y-=speed;
+        if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+            if(keyH.upPressed){
+                direction="up";
+            }
+            else if(keyH.downPressed){
+                direction="down";
+            }
+            else if(keyH.leftPressed){
+                direction="left";
+            }
+            else if(keyH.rightPressed){
+                direction="right";
+            }
         }
-        else if(keyH.downPressed){
-            direction="down";
-            y+=speed;
-        }
-        else if(keyH.leftPressed){
-            direction="left";
-            x-=speed;
-        }
-        else if(keyH.rightPressed){
-            direction="right";
-            x+=speed;
+
+        //check tile collision
+        collisionOn=false;
+        gp.cChecker.checkTile(this);
+
+        //if there is no collision
+        if(!collisionOn){
+            switch(direction){
+                case "up":
+                    worldY-=speed;
+                    break;
+                case "down":
+                    worldY+=speed;
+                    break;
+                case "left":
+                    worldX-=speed;
+                    break;
+                case "right":
+                    worldX+=speed;
+                    break;
+            }
         }
     }
     public void draw(Graphics2D g2){
@@ -82,8 +112,8 @@ public class Player extends Entity{
                 break;
         }
         if(direction.equals("up") || direction.equals("down"))
-            g2.drawImage(image, x, y, originalPlayerWidth, originalPlayerHeight, null);
+            g2.drawImage(image, screenX, screenY, originalPlayerWidth, originalPlayerHeight, null);
         else
-            g2.drawImage(image, x, y, originalPlayerHeight, originalPlayerWidth, null);
+            g2.drawImage(image, screenX, screenY, originalPlayerHeight, originalPlayerWidth, null);
     }
 }
